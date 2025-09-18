@@ -1,0 +1,59 @@
+{
+  "localeCode": "en-US",
+  "authors": ["LeCloutPanda"],
+  "messages": {
+    "Settings.dev.lecloutpanda.Optizoom": "Optizoom",
+    "Settings.dev.lecloutpanda.Optizoom.Breadcrumb": "Optizoom",
+
+    "Settings.dev.lecloutpanda.optizoom.enabled.Key": "Enabled",
+    "Settings.dev.lecloutpanda.optizoom.enabled.Description": "Enable Optizoom.",
+
+    "Settings.dev.lecloutpanda.optizoom.keyBind.Key": "Zoom Key",
+    "Settings.dev.lecloutpanda.optizoom.keyBind.Description": "The key used to activate zoom.",
+
+    "Settings.dev.lecloutpanda.optizoom.zoomFOV.Key": "Zoom FOV",
+    "Settings.dev.lecloutpanda.optizoom.zoomFOV.Description": "The field of view while zoomed in.",
+
+    "Settings.dev.lecloutpanda.optizoom.toggleZoom.Key": "Toggle Zoom",
+    "Settings.dev.lecloutpanda.optizoom.toggleZoom.Description": "Toggle zoom on key press instead of holding.",
+
+    "Settings.dev.lecloutpanda.optizoom.lerpZoom.Key": "Lerp Zoom",
+    "Settings.dev.lecloutpanda.optizoom.lerpZoom.Description": "Smoothly interpolate the zoom transition.",
+
+    "Settings.dev.lecloutpanda.optizoom.zoomSpeed.Key": "Zoom Speed",
+    "Settings.dev.lecloutpanda.optizoom.zoomSpeed.Description": "The speed at which zooming transitions occur.",
+
+    "Settings.dev.lecloutpanda.optizoom.scrollZoom.Key": "Scroll Zoom",
+    "Settings.dev.lecloutpanda.optizoom.scrollZoom.Description": "Enable zooming with the scroll wheel.",
+
+    "Settings.dev.lecloutpanda.optizoom.scrollZoomSpeed.Key": "Scroll Zoom Speed",
+    "Settings.dev.lecloutpanda.optizoom.scrollZoomSpeed.Description": "The speed of zooming when using the scroll wheel.",
+
+    "Settings.dev.lecloutpanda.optizoom.enableOverlay.Key": "Enable Overlay",
+    "Settings.dev.lecloutpanda.optizoom.enableOverlay.Description": "Enable the zoom overlay.",
+
+    "Settings.dev.lecloutpanda.optizoom.overlaySize.Key": "Overlay Size",
+    "Settings.dev.lecloutpanda.optizoom.overlaySize.Description": "The size of the zoom overlay.",
+
+    "Settings.dev.lecloutpanda.optizoom.overlayUri.Key": "Overlay Uri",
+    "Settings.dev.lecloutpanda.optizoom.overlayUri.Description": "The image URI used for the zoom overlay.",
+
+    "Settings.dev.lecloutpanda.optizoom.overlayBg.Key": "Overlay Background",
+    "Settings.dev.lecloutpanda.optizoom.overlayBg.Description": "Enable background rendering for the overlay.",
+
+    "Settings.dev.lecloutpanda.optizoom.overlayBgColor.Key": "Overlay Background Color",
+    "Settings.dev.lecloutpanda.optizoom.overlayBgColor.Description": "The background color of the overlay.",
+
+    "Settings.dev.lecloutpanda.optizoom.zoomInSound.Key": "Zoom In Sound",
+    "Settings.dev.lecloutpanda.optizoom.zoomInSound.Description": "The sound played when zooming in (URI). Null disables it.",
+
+    "Settings.dev.lecloutpanda.optizoom.zoomOutSound.Key": "Zoom Out Sound",
+    "Settings.dev.lecloutpanda.optizoom.zoomOutSound.Description": "The sound played when zooming out (URI). Null disables it.",
+
+    "Settings.dev.lecloutpanda.optizoom.zoomVolume.Key": "Zoom Volume",
+    "Settings.dev.lecloutpanda.optizoom.zoomVolume.Description": "The volume of zoom sounds. Range: 0–1.",
+
+    "Settings.dev.lecloutpanda.optizoom.exposeZoomedInVariable.Key": "Expose Zoomed-In Variable",
+    "Settings.dev.lecloutpanda.optizoom.exposeZoomedInVariable.Description": "Expose a zoomed-in variable on the user (User/optizoom.zoomed_in)."
+  }
+}

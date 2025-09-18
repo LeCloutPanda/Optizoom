@@ -1,83 +1,68 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<AppName>Resonite</AppName>
-		<ModLoaderShort>rml</ModLoaderShort>
+  <PropertyGroup>
+    <Version>2.3.0</Version>
+    <Authors>badhaloninja, LeCloutPanda</Authors>
+    <TargetFramework>net9.0</TargetFramework>
+    <RepositoryUrl>https://github.com/LeCloutPanda/Optizoom</RepositoryUrl>
+    <PackageId>dev.lecloutpanda.Optizoom</PackageId>
+    <Product>Optizoom</Product>
+    <RootNamespace>Optizoom</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyToPlugins>false</CopyToPlugins>
+    <GamePath Condition="'$(ResonitePath)' != ''">$(ResonitePath)/</GamePath>
+    <GamePath Condition="Exists('$(MSBuildProgramFiles32)\Steam\steamapps\common\Resonite\')">$(MSBuildProgramFiles32)\Steam\steamapps\common\Resonite\</GamePath>
+    <GamePath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/Resonite/')">$(HOME)/.steam/steam/steamapps/common/Resonite/</GamePath>
+    <PluginTargetDir>$(GamePath)BepInEx\plugins\$(AssemblyName)</PluginTargetDir>
+    <RestoreAdditionalProjectSources>
+      https://nuget-modding.resonite.net/v3/index.json;
+    </RestoreAdditionalProjectSources>
+  </PropertyGroup>
 
-		<Product>Optizoom</Product>
-		<Version>2.2.0</Version>
+  <ItemGroup>
+    <PackageReference Include="BepInEx.NET.CoreCLR" Version="6.0.0-be.*" IncludeAssets="compile" />
+    <PackageReference Include="BepInEx.ResonitePluginInfoProps" Version="3.*" />
+    <PackageReference Include="ResoniteModding.BepInExResoniteShim" Version="0.8.*" />
+    <PackageReference Include="ResoniteModding.BepisLocaleLoader" Version="1.1.0" />
+  </ItemGroup>
 
-		<Company>badhaloninja</Company>
-		<Copyright>Copyright © $(Company) 2024</Copyright>
+  <ItemGroup Condition="!Exists('$(GamePath)')">
+    <PackageReference Include="Resonite.GameLibs" Version="2025.*" />
+  </ItemGroup>
 
-		<Authors>$(Company)</Authors>
-		<AssemblyTitle>$(Product)</AssemblyTitle>
-		<AssemblyName>$(Product)</AssemblyName>
-
-		<RootNamespace>Optizoom</RootNamespace>
-		<ProjectGuid>{C88EC514-5D98-4824-8C66-5ED1888C764B}</ProjectGuid>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<OutputType>Library</OutputType>
-		<AppDesignerFolder>Properties</AppDesignerFolder>
-		<TargetFramework>net9.0</TargetFramework>
-		<LangVersion>preview</LangVersion>
-		<FileAlignment>512</FileAlignment>
-		<Deterministic>true</Deterministic>
-	</PropertyGroup>
-	
-	<PropertyGroup>
-		<CopyLocal>false</CopyLocal>
-		<CopyToMods Condition="'$(CopyToMods)'==''">true</CopyToMods>
-		<DebugSymbols Condition="'$(Configuration)'=='Release'">false</DebugSymbols>
-		<DebugType Condition="'$(Configuration)'=='Release'">None</DebugType>
-	</PropertyGroup>
-	
-	<ItemGroup>
-		<None Include="Properties\launchSettings.json" />
-		<None Include="..\README.md" Link="README.md" />
-		<None Include="..\LICENSE" Link="License" />
-	</ItemGroup>
-
-	<PropertyGroup>
-		<AppPath>$(MSBuildThisFileDirectory)$(AppName)</AppPath>
-		<AppPath Condition="Exists('E:\Programs\Steam\steamapps\common\$(AppName)')">E:\Programs\Steam\steamapps\common\$(AppName)\</AppPath>
-		<AppPath Condition="Exists('E:\SteamLibrary\steamapps\common\$(AppName)')">E:\SteamLibrary\steamapps\common\$(AppName)\</AppPath>
-		<AppPath Condition="Exists('$(HOME)/.steam/steam/steamapps/common/$(AppName)/')">$(HOME)/.steam/steam/steamapps/common/$(AppName)/</AppPath>
-		<AppPath Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\$(AppName)\')">C:\Program Files (x86)\Steam\steamapps\common\$(AppName)\</AppPath>
-
-		<AppData>$(AppPath)</AppData>
-		<!--<AppData Condition="Exists('$(AppPath)$(AppName)_Data')">$(AppPath)$(AppName)_Data\Managed\</AppData>-->
-
-		<AlternateDataPath>$(AppPath)\Alt\</AlternateDataPath>
-		<AlternateDataPath Condition="Exists('$(AppPath)')">$(AppPath)_altData</AlternateDataPath>
-	</PropertyGroup>
-
-	<ItemGroup>
-		<Reference Include="FrooxEngine">
-			<HintPath>$(AppData)FrooxEngine.dll</HintPath>
+  <ItemGroup Condition="Exists('$(GamePath)')">
+    <Reference Include="FrooxEngine">
+      <HintPath>$(GamePath)FrooxEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Elements.Core">
+      <HintPath>$(GamePath)Elements.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Renderite.Shared">
+      <HintPath>$(GamePath)Renderite.Shared.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+		<Reference Include="ProtoFluxBindings">
+			<HintPath>$(GamePath)ProtoFluxBindings.dll</HintPath>
 		</Reference>
-		<Reference Include="Elements.Core">
-			<HintPath>$(AppData)Elements.Core.dll</HintPath>
+		<Reference Include="ProtoFlux.Nodes.Core">
+			<HintPath>$(GamePath)ProtoFlux.Nodes.Core.dll</HintPath>
 		</Reference>
-		<Reference Include="Elements.Assets">
-			<HintPath>$(AppData)Elements.Assets.dll</HintPath>
+    <Reference Include="ProtoFlux.Core">
+			<HintPath>$(GamePath)ProtoFlux.Core.dll</HintPath>
 		</Reference>
-		<Reference Include="Renderite.Shared">
-			<HintPath>$(AppData)Renderite.Shared.dll</HintPath>
-		</Reference>
-		<Reference Include="HarmonyLib">
-			<HintPath>$(AppPath)$(ModLoaderShort)_libs\0Harmony.dll</HintPath>
-			<HintPath Condition="Exists('$(AppPath)0Harmony.dll')">$(AppPath)0Harmony.dll</HintPath>
-		</Reference>
-		<Reference Include="$(AppName)ModLoader">
-			<HintPath>$(AppPath)$(AppName)ModLoader.dll</HintPath>
-			<HintPath>$(AppPath)Libraries\$(AppName)ModLoader.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-	
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(CopyToMods)'=='true'">
-		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(AppPath)$(ModLoaderShort)_mods" />
-		<Message Text="Copied $(TargetFileName) to $(AppPath)$(ModLoaderShort)_mods" Importance="high" />
-	</Target>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <ItemGroup>
+      <PluginFiles Include="$(TargetPath)" />
+      <PluginFiles Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(PluginTargetDir)" Condition="'$(CopyToPlugins)' == 'true'" />
+    <Message Text="Copied plugin files to $(PluginTargetDir)" Importance="high" Condition="'$(CopyToPlugins)' == 'true'" />
+  </Target>
 </Project>

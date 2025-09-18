@@ -1,0 +1,47 @@
+# This file is used by the Thunderstore CLI to build and publish your mod to Thunderstore. https://github.com/thunderstore-io/thunderstore-cli
+
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "LeCloutPanda"
+name = "Optizoom"
+versionNumber = "2.3.0"
+description = "Adds the ability to zoom with a keypress."
+websiteUrl = "https://github.com/LeCloutPanda/Optizoom"
+containsNsfwContent = false
+
+[package.dependencies] 
+ResoniteModding-BepisLoader = "1.3.1"
+
+[build]
+icon = "./icon.png"
+readme = "./README.md"
+outdir = "./build"
+
+[[build.copy]]
+source = "./Optizoom/bin/Release/Optizoom.dll"
+target = "plugins/Optizoom/"
+
+[[build.copy]]
+source = "./Optizoom/Locale"
+target = "plugins/Optizoom/Locale"
+
+[[build.copy]]
+source = "./Optizoom/bin/Release/Optizoom.pdb"
+target = "plugins/Optizoom/"
+
+# [[build.copy]]
+# source = "./CHANGELOG.md"
+# target = "/"
+
+[[build.copy]]
+source = "./LICENSE"
+target = "/"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["resonite"]
+
+[publish.categories]
+resonite = [ "visualtweaks", "controls", "misc", "mods" ] 
