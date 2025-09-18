@@ -31,6 +31,7 @@ public class Optizoom : BasePlugin
     private static ConfigEntry<bool> overlayBg;
     private static ConfigEntry<colorX> overlayBgColor;
 
+    private static ConfigEntry<bool> enableZoomSounds;
     private static ConfigEntry<string> zoomInSound;
     private static ConfigEntry<string> zoomOutSound;
     private static ConfigEntry<float> zoomVolume;
@@ -41,6 +42,7 @@ public class Optizoom : BasePlugin
     static ManualLogSource Logger = null!;
 
     private static bool toggleState = false;
+    private static bool zoomState = false;
 
     public override void Load()
     {
@@ -61,6 +63,7 @@ public class Optizoom : BasePlugin
         overlayBg = Config.Bind("Overlay", "overlayBg", true, new ConfigDescription("Enable Overlay Background", null, new ConfigLocale("Settings.dev.lecloutpanda.optizoom.overlayBg.Key", "Settings.dev.lecloutpanda.optizoom.overlayBg.Description")));
         overlayBgColor = Config.Bind("Overlay", "overlayBgColor", colorX.Black, new ConfigDescription("Overlay Background Color", null, new ConfigLocale("Settings.dev.lecloutpanda.optizoom.overlayBgColor.Key", "Settings.dev.lecloutpanda.optizoom.overlayBgColor.Description")));
 
+        enableZoomSounds = Config.Bind("Sound", "enableZoomSounds", true, new ConfigDescription("Enable Zoom Sounds", null, new ConfigLocale("Settings.dev.lecloutpanda.optizoom.enableZoomSounds.Key", "Settings.dev.lecloutpanda.optizoom.enableZoomSounds.Description")));
         zoomInSound = Config.Bind("Sound", "zoomInSound", "", new ConfigDescription("Zoom In Sound URI (null to disable)", null, new ConfigLocale("Settings.dev.lecloutpanda.optizoom.zoomInSound.Key", "Settings.dev.lecloutpanda.optizoom.zoomInSound.Description")));
         zoomOutSound = Config.Bind("Sound", "zoomOutSound", "", new ConfigDescription("Zoom Out Sound URI (null to disable)", null, new ConfigLocale("Settings.dev.lecloutpanda.optizoom.zoomOutSound.Key", "Settings.dev.lecloutpanda.optizoom.zoomOutSound.Description")));
         zoomVolume = Config.Bind("Sound", "zoomVolume", 1f, new ConfigDescription("Zoom Volume", new AcceptableValueRange<float>(0f, 1f), new ConfigLocale("Settings.dev.lecloutpanda.optizoom.zoomVolume.Key", "Settings.dev.lecloutpanda.optizoom.zoomVolume.Description")));
@@ -70,12 +73,12 @@ public class Optizoom : BasePlugin
         Logger = Log;
         HarmonyInstance.PatchAll();
 
-        overlaySize.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/overlaySize", overlaySize.Value); 
-        overlayUri.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/overlayUri", overlayUri.Value);
+        overlaySize.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/overlaySize", overlaySize.Value);
+        overlayUri.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/overlayUri", new Uri(overlayUri.Value));
         overlayBg.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/overlayBg", overlayBg.Value);
         overlayBgColor.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/overlayBgColor", overlayBgColor.Value);
-        zoomInSound.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/zoomInSoundUri", zoomInSound.Value);
-        zoomOutSound.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/zoomOutSoundUri", zoomOutSound.Value);
+        zoomInSound.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/zoomInSoundUri", new Uri(zoomInSound.Value));
+        zoomOutSound.SettingChanged += (_, _) => TryWriteDynamicValue(overlayVisual, "OverlayVisual/zoomOutSoundUri", new Uri(zoomOutSound.Value));
         toggleZoom.SettingChanged += (_, _) => toggleState = false;
     }
 
@@ -96,8 +99,8 @@ public class Optizoom : BasePlugin
 
             Uri texUri = new Uri(overlayUri.Value);
             var texture = overlayVisual.AttachTexture(texUri, wrapMode: TextureWrapMode.Clamp);
-            texture.FilterMode.Value = TextureFilterMode.Point;
             // Overlay Texture
+            texture.FilterMode.Value = TextureFilterMode.Point;
             texture.URL.SyncWithVariable("overlayUri");
 
             var unlit = overlayVisual.AttachComponent<UnlitMaterial>();
@@ -120,24 +123,33 @@ public class Optizoom : BasePlugin
             frameRenderer.EnabledField.SyncWithVariable("overlayBg");
 
             var zoomIn = overlayVisual.AttachComponent<StaticAudioClip>();
-            zoomIn.URL.Value = new Uri(zoomInSound.Value);
-            zoomIn.URL.SyncWithVariable("zoomInSoundUri");
+            if (!zoomInSound.Value.IsNullOrWhiteSpace()) zoomIn.URL.Value = new Uri(zoomInSound.Value);
+            zoomIn.RunInUpdates(3, () =>
+            {
+                var zoomInDynamicField = overlayVisual.AttachComponent<DynamicField<Uri>>();
+                zoomInDynamicField.VariableName.Value = "zoomInSoundUri";
+                zoomInDynamicField.TargetField.Value = zoomIn.URL.ReferenceID; 
+            });
+
             var zoomOut = overlayVisual.AttachComponent<StaticAudioClip>();
-            zoomOut.URL.Value = new Uri(zoomOutSound.Value);
-            zoomOut.URL.SyncWithVariable("zoomOutSoundUri");
+            if (!zoomOutSound.Value.IsNullOrWhiteSpace()) zoomOut.URL.Value = new Uri(zoomOutSound.Value);
+            zoomOut.RunInUpdates(3, () =>
+            {
+                var zoomOutDynamicField = overlayVisual.AttachComponent<DynamicField<Uri>>();
+                zoomOutDynamicField.VariableName.Value = "zoomOutSoundUri";
+                zoomOutDynamicField.TargetField.Value = zoomOut.URL.ReferenceID;
+            });
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Userspace), "OnCommonUpdate")]
         public static void Update(Userspace __instance)
         {
-            // TODO: Broken
             if (toggleZoom.Value && __instance.InputInterface.GetKeyDown(zoomKey.Value))
             {
                 toggleState = !toggleState;
             }
 
-            //Logger.LogInfo("Deez");
             var zoom = enabled.Value
                     && !__instance.LocalUser.HasActiveFocus() // Not focused in any field
                     && !Userspace.HasFocus // Not focused in userspace field
@@ -154,19 +166,19 @@ public class Optizoom : BasePlugin
                 catch { }
             } 
 
-            if ((zoom && enableOverlay.Value) != overlayVisual.ActiveSelf)
+            if (zoom != zoomState)
             {
-                overlayVisual.ActiveSelf = zoom;
+                zoomState = zoom;
+                if (enableOverlay.Value) overlayVisual.ActiveSelf = zoom;
+
+                if (!enableZoomSounds.Value) return;            
                 var soundUri = zoom ? zoomInSound.Value : zoomOutSound.Value;
-                if (soundUri.IsNullOrWhiteSpace()) return;
-                var clip = overlayVisual.GetComponent<StaticAudioClip>(a => a.URL.Value == new Uri(soundUri));
+                var clip = overlayVisual.GetComponent<StaticAudioClip>(a => a.URL.Value.ToString() == soundUri);
                 if (clip == null) return;
                 overlayVisual.PlayOneShot(clip, zoomVolume.Value, false, parent: false);
             }
         }
     }
-
-
 
     [HarmonyPatch(typeof(UserRoot), "get_DesktopFOV")]
     class Optizoom_Patch

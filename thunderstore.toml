@@ -6,7 +6,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "LeCloutPanda"
 name = "Optizoom"
-versionNumber = "2.3.0"
+versionNumber = "2.3.1"
 description = "Adds the ability to zoom with a keypress."
 websiteUrl = "https://github.com/LeCloutPanda/Optizoom"
 containsNsfwContent = false
