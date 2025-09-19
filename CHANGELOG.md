@@ -1,4 +1,3 @@
-# Changelog v2.3.0
-- Fixed issue with on creation of UserSpace variables throwing an exception
-- Added toggle for sounds rather then needing to null fields out
-- Seperated sounds from overlay so user can still have sounds and not use the overlay
+# Changelog v2.3.2
+- Fixed issue of userspace keybinds becoming broken. Woops.
+- Added try catches to hopefully not break more things.

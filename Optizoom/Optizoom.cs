@@ -89,153 +89,173 @@ public class Optizoom : BasePlugin
         [HarmonyPatch(typeof(Userspace), "OnAttach")]
         public static void Postfix(Userspace __instance)
         {
-            Slot overlayRoot = __instance.World.GetGloballyRegisteredComponent<OverlayManager>().OverlayRoot;
-            overlayVisual = overlayRoot.AddSlot("OverlayVisual - Optizoom");
-            overlayVisual.PersistentSelf = false;
-            overlayVisual.LocalPosition = float3.Forward * 0.1f;
-            overlayVisual.ActiveSelf = false;
-
-            overlayVisual.AttachComponent<DynamicVariableSpace>().SpaceName.Value = "OverlayVisual";
-
-            Uri texUri = new Uri(overlayUri.Value);
-            var texture = overlayVisual.AttachTexture(texUri, wrapMode: TextureWrapMode.Clamp);
-            // Overlay Texture
-            texture.FilterMode.Value = TextureFilterMode.Point;
-            texture.URL.SyncWithVariable("overlayUri");
-
-            var unlit = overlayVisual.AttachComponent<UnlitMaterial>();
-            unlit.Texture.TrySet(texture);
-            unlit.BlendMode.Value = BlendMode.Alpha;
-
-            var overlayQuad = overlayVisual.AttachQuad(overlaySize.Value, unlit, false);
-            overlayQuad.Size.SyncWithVariable("overlaySize");
-
-            var frameUnlit = overlayVisual.AttachComponent<UnlitMaterial>();
-            frameUnlit.TintColor.Value = overlayBgColor.Value;
-            // BGColor
-            frameUnlit.TintColor.SyncWithVariable("overlayBgColor");
-
-            var frame = overlayVisual.AttachComponent<FrameMesh>();
-
-            var frameRenderer = overlayVisual.AttachMesh(frame, frameUnlit);
-            frame.Thickness.Value = 5f;
-            frame.ContentSize.DriveFrom(overlayQuad.Size);
-            frameRenderer.EnabledField.SyncWithVariable("overlayBg");
-
-            var zoomIn = overlayVisual.AttachComponent<StaticAudioClip>();
-            if (!zoomInSound.Value.IsNullOrWhiteSpace()) zoomIn.URL.Value = new Uri(zoomInSound.Value);
-            zoomIn.RunInUpdates(3, () =>
+            try
             {
-                var zoomInDynamicField = overlayVisual.AttachComponent<DynamicField<Uri>>();
-                zoomInDynamicField.VariableName.Value = "zoomInSoundUri";
-                zoomInDynamicField.TargetField.Value = zoomIn.URL.ReferenceID; 
-            });
+                Slot overlayRoot = __instance.World.GetGloballyRegisteredComponent<OverlayManager>().OverlayRoot;
+                overlayVisual = overlayRoot.AddSlot("OverlayVisual - Optizoom");
+                overlayVisual.PersistentSelf = false;
+                overlayVisual.LocalPosition = float3.Forward * 0.1f;
+                overlayVisual.ActiveSelf = false;
 
-            var zoomOut = overlayVisual.AttachComponent<StaticAudioClip>();
-            if (!zoomOutSound.Value.IsNullOrWhiteSpace()) zoomOut.URL.Value = new Uri(zoomOutSound.Value);
-            zoomOut.RunInUpdates(3, () =>
-            {
-                var zoomOutDynamicField = overlayVisual.AttachComponent<DynamicField<Uri>>();
-                zoomOutDynamicField.VariableName.Value = "zoomOutSoundUri";
-                zoomOutDynamicField.TargetField.Value = zoomOut.URL.ReferenceID;
-            });
+                overlayVisual.AttachComponent<DynamicVariableSpace>().SpaceName.Value = "OverlayVisual";
+
+                Uri texUri = new Uri(overlayUri.Value);
+                var texture = overlayVisual.AttachTexture(texUri, wrapMode: TextureWrapMode.Clamp);
+                // Overlay Texture
+                texture.FilterMode.Value = TextureFilterMode.Point;
+                texture.URL.SyncWithVariable("overlayUri");
+
+                var unlit = overlayVisual.AttachComponent<UnlitMaterial>();
+                unlit.Texture.TrySet(texture);
+                unlit.BlendMode.Value = BlendMode.Alpha;
+
+                var overlayQuad = overlayVisual.AttachQuad(overlaySize.Value, unlit, false);
+                overlayQuad.Size.SyncWithVariable("overlaySize");
+
+                var frameUnlit = overlayVisual.AttachComponent<UnlitMaterial>();
+                frameUnlit.TintColor.Value = overlayBgColor.Value;
+                // BGColor
+                frameUnlit.TintColor.SyncWithVariable("overlayBgColor");
+
+                var frame = overlayVisual.AttachComponent<FrameMesh>();
+
+                var frameRenderer = overlayVisual.AttachMesh(frame, frameUnlit);
+                frame.Thickness.Value = 5f;
+                frame.ContentSize.DriveFrom(overlayQuad.Size);
+                frameRenderer.EnabledField.SyncWithVariable("overlayBg");
+
+                var zoomIn = overlayVisual.AttachComponent<StaticAudioClip>();
+                if (!zoomInSound.Value.IsNullOrWhiteSpace()) zoomIn.URL.Value = new Uri(zoomInSound.Value);
+                zoomIn.RunInUpdates(3, () =>
+                {
+                    var zoomInDynamicField = overlayVisual.AttachComponent<DynamicField<Uri>>();
+                    zoomInDynamicField.VariableName.Value = "zoomInSoundUri";
+                    zoomInDynamicField.TargetField.Value = zoomIn.URL.ReferenceID;
+                });
+
+                var zoomOut = overlayVisual.AttachComponent<StaticAudioClip>();
+                if (!zoomOutSound.Value.IsNullOrWhiteSpace()) zoomOut.URL.Value = new Uri(zoomOutSound.Value);
+                zoomOut.RunInUpdates(3, () =>
+                {
+                    var zoomOutDynamicField = overlayVisual.AttachComponent<DynamicField<Uri>>();
+                    zoomOutDynamicField.VariableName.Value = "zoomOutSoundUri";
+                    zoomOutDynamicField.TargetField.Value = zoomOut.URL.ReferenceID;
+                });
+            }
+            catch (Exception ex) { Logger.LogError(ex); }
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Userspace), "OnCommonUpdate")]
         public static void Update(Userspace __instance)
         {
-            if (toggleZoom.Value && __instance.InputInterface.GetKeyDown(zoomKey.Value))
+            try
             {
-                toggleState = !toggleState;
-            }
-
-            var zoom = enabled.Value
-                    && !__instance.LocalUser.HasActiveFocus() // Not focused in any field
-                    && !Userspace.HasFocus // Not focused in userspace field
-                    && (toggleState || __instance.InputInterface.GetKey(zoomKey.Value)); // Key pressed
-
-            if (exposeZoomedInVariable.Value)
-            {
-                try
+                if (toggleZoom.Value && __instance.InputInterface.GetKeyDown(zoomKey.Value))
                 {
+                    toggleState = !toggleState;
+                }
+
+                var zoom = enabled.Value
+                        && !__instance.LocalUser.HasActiveFocus() // Not focused in any field
+                        && !Userspace.HasFocus // Not focused in userspace field
+                        && (toggleState || __instance.InputInterface.GetKey(zoomKey.Value)); // Key pressed
+
+                if (exposeZoomedInVariable.Value)
+                {
+
                     var userRoot = __instance.Engine.WorldManager.FocusedWorld?.LocalUser?.Root?.Slot;
                     DynamicVariableWriteResult result = userRoot.WriteDynamicVariable<bool>("User/optizoom.zoomed_in", zoom);
                     if (result != 0) DynamicVariableHelper.CreateVariable<bool>(userRoot, "User/optizoom.zoomed_in", zoom, false);
+
                 }
-                catch { }
-            } 
 
-            if (zoom != zoomState)
-            {
-                zoomState = zoom;
-                if (enableOverlay.Value) overlayVisual.ActiveSelf = zoom;
+                if (zoom != zoomState)
+                {
+                    zoomState = zoom;
+                    if (enableOverlay.Value) overlayVisual.ActiveSelf = zoom;
 
-                if (!enableZoomSounds.Value) return;            
-                var soundUri = zoom ? zoomInSound.Value : zoomOutSound.Value;
-                var clip = overlayVisual.GetComponent<StaticAudioClip>(a => a.URL.Value.ToString() == soundUri);
-                if (clip == null) return;
-                overlayVisual.PlayOneShot(clip, zoomVolume.Value, false, parent: false);
+                    if (!enableZoomSounds.Value) return;
+                    var soundUri = zoom ? zoomInSound.Value : zoomOutSound.Value;
+                    var clip = overlayVisual.GetComponent<StaticAudioClip>(a => a.URL?.Value?.ToString() == soundUri);
+                    if (clip == null) return;
+                    overlayVisual.PlayOneShot(clip, zoomVolume.Value, false, parent: false);
+                }
             }
+            catch (Exception ex) { Logger.LogError(ex); }
         }
     }
 
-    [HarmonyPatch(typeof(UserRoot), "get_DesktopFOV")]
+    [HarmonyPatch]
     class Optizoom_Patch
     {
         static readonly Dictionary<UserRoot, UserRootFOVLerps> FOVLerps = [];
 
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(UserRoot), "DesktopFOV", MethodType.Getter)]
         public static void Postfix(UserRoot __instance, ref float __result, DesktopRenderSettings ____renderSettings)
         {
-            if (!FOVLerps.TryGetValue(__instance, out UserRootFOVLerps lerp))
+            float initialFov = __result;
+
+            try
             {
-                lerp = new UserRootFOVLerps(); // Needs one per UserRoot or else userspace and focused world fights
-                FOVLerps.Add(__instance, lerp);
+                if (!FOVLerps.TryGetValue(__instance, out UserRootFOVLerps lerp))
+                {
+                    lerp = new UserRootFOVLerps(); // Needs one per UserRoot or else userspace and focused world fights
+                    FOVLerps.Add(__instance, lerp);
+                }
+
+                var zoom = enabled.Value
+                        && !__instance.LocalUser.HasActiveFocus() // Not focused in any field
+                        && !Userspace.HasFocus // Not focused in userspace field
+                        && __instance.Engine.WorldManager.FocusedWorld == __instance.World // Focused in the same world as the UserRoot
+                        && (toggleState || __instance.InputInterface.GetKey(zoomKey.Value)); // Key pressed
+
+                float fovSetting = (____renderSettings != null) ? ____renderSettings.FieldOfView.Value : 60f;
+                float target = zoom ? fovSetting - zoomFOV.Value : 0f;//__result;
+
+                if (zoom && scrollZoom.Value)
+                {
+                    var scrollDelta = -__instance.InputInterface.Mouse.NormalizedScrollWheelDelta.Value.Y;//.ScrollWheelDelta.Delta.y;
+
+                    lerp.scroll += scrollDelta * scrollZoomSpeed.Value;
+
+                    lerp.scroll = MathX.Clamp(lerp.scroll, -zoomFOV.Value, 179f - zoomFOV.Value); // Clamp to the available fov
+                    target -= lerp.scroll;
+
+                    /* Compensation is not complete yet
+                    lerp.scroll = MathX.Clamp(lerp.scroll, -1, 1);
+
+                    var remap = MathX.Remap11_01(lerp.scroll);
+                    remap *= remap;
+                    remap = MathX.Remap(remap, 0f, 1f, -ZoomFOV.Value, 179f - ZoomFOV.Value);
+
+                    target -= remap;
+                    */
+                }
+                else if (scrollZoom.Value && !MathX.Approximately(lerp.scroll, 0f, 0.001))
+                {
+                    lerp.scroll = 0f;
+                }
+
+                if (lerpZoom.Value)
+                {
+                    lerp.currentLerp = MathX.SmoothDamp(lerp.currentLerp, target, ref lerp.lerpVelocity, zoomSpeed.Value, 179f, __instance.Time.Delta); // Funny lerp
+                    __result -= lerp.currentLerp;
+                }
+                else
+                {
+                    __result -= target;
+                }
+
+                __result = MathX.FilterInvalid(__result, 60f); // fallback to 60 fov if invalid
+                __result = MathX.Clamp(__result, 1f, 179f);
             }
-
-            var zoom = enabled.Value
-                    && !__instance.LocalUser.HasActiveFocus() // Not focused in any field
-                    && !Userspace.HasFocus // Not focused in userspace field
-                    && __instance.Engine.WorldManager.FocusedWorld == __instance.World // Focused in the same world as the UserRoot
-                    && (toggleState || __instance.InputInterface.GetKey(zoomKey.Value)); // Key pressed
-
-            float fovSetting = (____renderSettings != null) ? ____renderSettings.FieldOfView.Value : 60f;
-            float target = zoom ? fovSetting - zoomFOV.Value : 0f;//__result;
-
-            if (zoom && scrollZoom.Value)
+            catch (Exception ex)
             {
-                var scrollDelta = -__instance.InputInterface.Mouse.NormalizedScrollWheelDelta.Value.Y;//.ScrollWheelDelta.Delta.y;
-
-                lerp.scroll += scrollDelta * scrollZoomSpeed.Value;
-
-                lerp.scroll = MathX.Clamp(lerp.scroll, -zoomFOV.Value, 179f - zoomFOV.Value); // Clamp to the available fov
-                target -= lerp.scroll;
-
-                /* Compensation is not complete yet
-                lerp.scroll = MathX.Clamp(lerp.scroll, -1, 1);
-
-                var remap = MathX.Remap11_01(lerp.scroll);
-                remap *= remap;
-                remap = MathX.Remap(remap, 0f, 1f, -ZoomFOV.Value, 179f - ZoomFOV.Value);
-
-                target -= remap;
-                */
+                Logger.LogError(ex);
+                __result = initialFov;
             }
-            else if (scrollZoom.Value && !MathX.Approximately(lerp.scroll, 0f, 0.001)) {
-                lerp.scroll = 0f;
-            }
-
-            if (lerpZoom.Value)
-            {
-                lerp.currentLerp = MathX.SmoothDamp(lerp.currentLerp, target, ref lerp.lerpVelocity, zoomSpeed.Value, 179f, __instance.Time.Delta); // Funny lerp
-                __result -= lerp.currentLerp;
-            } else
-            {
-                __result -= target;
-            }
-
-            __result = MathX.FilterInvalid(__result, 60f); // fallback to 60 fov if invalid
-            __result = MathX.Clamp(__result, 1f, 179f);
         }
     }
 

@@ -6,7 +6,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "LeCloutPanda"
 name = "Optizoom"
-versionNumber = "2.3.1"
+versionNumber = "2.3.2"
 description = "Adds the ability to zoom with a keypress."
 websiteUrl = "https://github.com/LeCloutPanda/Optizoom"
 containsNsfwContent = false
@@ -31,9 +31,9 @@ target = "plugins/Optizoom/Locale"
 source = "./Optizoom/bin/Release/Optizoom.pdb"
 target = "plugins/Optizoom/"
 
-# [[build.copy]]
-# source = "./CHANGELOG.md"
-# target = "/"
+[[build.copy]]
+source = "./CHANGELOG.md"
+target = "/"
 
 [[build.copy]]
 source = "./LICENSE"
